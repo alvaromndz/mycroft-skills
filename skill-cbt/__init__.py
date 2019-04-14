@@ -1,28 +1,22 @@
-# TODO: Add an appropriate license to your skill before publishing.  See
-# the LICENSE file for more information.
-
-# Below is the list of outside modules you'll be using in your skill.
-# They might be built-in to Python, from mycroft-core or from external
-# libraries.  If you use an external library, be sure to include it
-# in the requirements.txt file so the library is installed properly
-# when the skill gets installed later by a user.
-
 from adapt.intent import IntentBuilder
 from mycroft.skills.core import MycroftSkill, intent_handler
 from mycroft.util.log import LOG
 
-# Each skill is contained within its own class, which inherits base methods
-# from the MycroftSkill class.  You extend this class as shown below.
-
-# TODO: Change "Template" to a unique name for your skill
 class CBTSkill(MycroftSkill):
 
-    # The constructor of the skill, which calls MycroftSkill's constructor
     def __init__(self):
         super(CBTSkill, self).__init__(name="CBTSkill")
         
-        # Initialize working variables used within the skill.
+    def initialize(self):
         self.mood = True
+
+        path = dirname(abspath(__file__))
+
+        path_to_negative = join(path, 'vocab', self.lang, 'Negative.voc')
+        self._negative_words = self._lines_from_path(path_to_negative)
+
+        path_to_positive = join(path, 'vocab', self.lang, 'Positive.voc')
+        self._positive_words = self._lines_from_path(path_to_positive)
 
     # The "handle_xxxx_intent" function is triggered by Mycroft when the
     # skill's intent is matched.  The intent is defined by the IntentBuilder()
@@ -31,20 +25,19 @@ class CBTSkill(MycroftSkill):
     # is found from each of the files:
     #    vocab/en-us/Hello.voc
     #    vocab/en-us/World.voc
-    # In this example that means it would match on utterances like:
-    #   'Hello world'
-    #   'Howdy you great big world'
-    #   'Greetings planet earth'
     @intent_handler(IntentBuilder("").require("Therapize"))
     def handle_therapize_intent(self, message):
-        # In this case, respond by simply speaking a canned response.
-        # Mycroft will randomly speak one of the lines from the file
-        #    dialogs/en-us/hello.world.dialog
         self.speak_dialog("hello")
-        self.speak_dialog("how.are.you")
+        response = self.speak_dialog("how.are.you")
+
+        if response in self._negative_words:
+            self.mood = False
+            self.speak_dialog("im.sorry", data={"followup": "Can you tell me what made your day tough?"})
+        else:
+            self.mood = True
 
     @intent_handler(IntentBuilder("").require("Negative"))
-    def handle_count_intent(self, message):
+    def handle_negative_intent(self, message):
         self.mood = False
         self.speak_dialog("im.sorry", data={"followup": "Can you tell me what made your day tough?"})
 
