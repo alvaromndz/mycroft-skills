@@ -1,6 +1,7 @@
 from adapt.intent import IntentBuilder
 from mycroft.skills.core import MycroftSkill, intent_handler
 from mycroft.util.log import LOG
+from os.path import join, dirname, abspath
 
 class CBTSkill(MycroftSkill):
 
@@ -18,6 +19,11 @@ class CBTSkill(MycroftSkill):
         path_to_positive = join(path, 'vocab', self.lang, 'Positive.voc')
         self._positive_words = self._lines_from_path(path_to_positive)
 
+    def _lines_from_path(self, path):
+        with open(path, 'r') as file:
+            lines = [line.strip().lower() for line in file]
+            return lines
+
     # The "handle_xxxx_intent" function is triggered by Mycroft when the
     # skill's intent is matched.  The intent is defined by the IntentBuilder()
     # pieces, and is triggered when the user's utterance matches the pattern
@@ -32,9 +38,11 @@ class CBTSkill(MycroftSkill):
 
         if response in self._negative_words:
             self.mood = False
-            self.speak_dialog("im.sorry", data={"followup": "Can you tell me what made your day tough?"})
-        else:
-            self.mood = True
+            reason = self.get_response("im.sorry", data={"followup": "Can you tell me what made your day tough?"})
+
+        if reason in self.reasons:
+            feel = self.get_response("how.do.you.feel")
+            self.speak("I understand feeling that way. Do you want to learn more about your anger?")
 
     @intent_handler(IntentBuilder("").require("Negative"))
     def handle_negative_intent(self, message):
