@@ -28,7 +28,7 @@ class CBTSkill(MycroftSkill):
     @intent_handler(IntentBuilder("").require("Therapize"))
     def handle_therapize_intent(self, message):
         self.speak_dialog("hello")
-        response = self.speak_dialog("how.are.you")
+        response = self.get_response("how.are.you")
 
         if response in self._negative_words:
             self.mood = False
