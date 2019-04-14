@@ -18,6 +18,11 @@ class CBTSkill(MycroftSkill):
         path_to_positive = join(path, 'vocab', self.lang, 'Positive.voc')
         self._positive_words = self._lines_from_path(path_to_positive)
 
+    def _lines_from_path(self, path):
+        with open(path, 'r') as file:
+            lines = [line.strip().lower() for line in file]
+            return lines
+
     # The "handle_xxxx_intent" function is triggered by Mycroft when the
     # skill's intent is matched.  The intent is defined by the IntentBuilder()
     # pieces, and is triggered when the user's utterance matches the pattern
